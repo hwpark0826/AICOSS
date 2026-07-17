@@ -30,6 +30,13 @@ from ..load_data import discover_inputs, read_area_reference
 
 TARGET_CODE = "3110091"
 TARGET_NAME = "리움미술관"
+NEIGHBOR_COUNT = 5
+# The current polygon audit verified this overlap at approximately 220,587 m².
+# When candidates overlap, the closer-centroid area is retained to avoid
+# double-counting the same physical commercial space in a comparison group.
+VERIFIED_NEIGHBOR_OVERLAPS_M2 = {
+    frozenset({"3120046", "3001491"}): 220_586.8,
+}
 MAIN_QUARTERS = tuple(f"{year}{quarter}" for year in range(2021, 2026) for quarter in range(1, 5))
 ALL_QUARTERS = (*MAIN_QUARTERS, "20261")
 ANALYSIS_YEARS = (2022, 2023, 2024, 2025)
@@ -378,21 +385,37 @@ def _load_spatial() -> dict[str, SpatialArea]:
 def _neighbors(annual: pd.DataFrame, spatial: dict[str, SpatialArea]) -> pd.DataFrame:
     target = spatial[TARGET_CODE]
     valid_codes = set(annual["area_code"])
-    candidate_words = ["한남", "이태원", "경리단", "해방촌", "한강진", "리움"]
     rows: list[dict[str, object]] = []
     for code, item in spatial.items():
         if code == TARGET_CODE or code not in valid_codes:
             continue
         distance = hypot(item.x - target.x, item.y - target.y)
-        name_candidate = any(word in item.name for word in candidate_words)
-        if distance > 1000 and not name_candidate:
+        if distance > 1000:
             continue
         rows.append({"area_code": code, "area_name": item.name, "area_type": item.area_type, "district": item.district,
                      "administrative_dong": item.dong, "centroid_distance_m": distance,
-                     "within_500m": distance <= 500, "within_1km": distance <= 1000,
-                     "name_candidate": name_candidate,
-                     "selection_reason": "; ".join(label for label, ok in [("centroid_within_1km", distance <= 1000), ("itaewon_hannam_name_candidate", name_candidate)] if ok)})
-    return pd.DataFrame(rows).sort_values(["centroid_distance_m", "area_code"]).reset_index(drop=True)
+                     "within_500m": distance <= 500, "within_1km": True,
+                     "candidate_reason": "centroid_within_1km"})
+    candidates = pd.DataFrame(rows).sort_values(["centroid_distance_m", "area_code"]).reset_index(drop=True)
+    retained: list[str] = []
+    excluded: list[dict[str, object]] = []
+    for row in candidates.itertuples():
+        conflict = next((code for code in retained if frozenset({str(row.area_code), code}) in VERIFIED_NEIGHBOR_OVERLAPS_M2), None)
+        if conflict is None:
+            retained.append(str(row.area_code))
+            if len(retained) == NEIGHBOR_COUNT:
+                break
+        else:
+            excluded.append({
+                "area_code": str(row.area_code), "excluded_due_to_overlap_with": conflict,
+                "overlap_estimate_m2": VERIFIED_NEIGHBOR_OVERLAPS_M2[frozenset({str(row.area_code), conflict})],
+            })
+    exclusion = pd.DataFrame(excluded)
+    result = candidates.loc[candidates["area_code"].isin(retained)].copy()
+    result["overlap_screen"] = "retained after verified tourism-zone/itaewon-station overlap screen"
+    result["selection_reason"] = result["candidate_reason"] + "; overlap_screen_retained"
+    result.attrs["exclusions"] = exclusion
+    return result.reset_index(drop=True)
 
 
 def _neighbor_trend(annual: pd.DataFrame, neighbors: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -405,10 +428,23 @@ def _neighbor_trend(annual: pd.DataFrame, neighbors: pd.DataFrame) -> tuple[pd.D
     base = per_area.loc[per_area["year"].eq(2022), ["area_code", "sales_amount"]].rename(columns={"sales_amount": "sales_2022"})
     per_area = per_area.merge(base, on="area_code", how="left")
     per_area["sales_index_2022_100"] = per_area["sales_amount"] / per_area["sales_2022"] * 100
-    aggregate = data.assign(group=np.where(data["area_code"].eq(TARGET_CODE), "leeum", "selected_neighbors")).groupby(["group", "year"], as_index=False).agg(
-        sales_amount=("sales_amount", "sum"), sales_transactions=("sales_transactions", "sum"), store_count=("store_count", "sum"),
+    target_series = per_area.loc[per_area["area_code"].eq(TARGET_CODE)].copy()
+    target_series["group"] = "leeum"
+    target_series["aggregation_method"] = "target area"
+    neighbor_series = per_area.loc[~per_area["area_code"].eq(TARGET_CODE)].groupby("year", as_index=False).agg(
+        sales_index_2022_100=("sales_index_2022_100", "mean"),
+        median_sales_index_2022_100=("sales_index_2022_100", "median"),
+        area_count=("area_code", "nunique"),
     )
-    aggregate["sales_index_2022_100"] = aggregate.groupby("group")["sales_amount"].transform(lambda x: x / x.iloc[0] * 100)
+    neighbor_series["group"] = "independent_neighbors_equal_weight"
+    neighbor_series["aggregation_method"] = "equal-weight mean of each independent area's 2022=100 index"
+    aggregate = pd.concat([
+        target_series.assign(
+            aggregation_method="target area", area_count=1,
+            median_sales_index_2022_100=target_series["sales_index_2022_100"],
+        )[["group", "year", "sales_index_2022_100", "median_sales_index_2022_100", "area_count", "aggregation_method"]],
+        neighbor_series[["group", "year", "sales_index_2022_100", "median_sales_index_2022_100", "area_count", "aggregation_method"]],
+    ], ignore_index=True)
     return per_area, aggregate
 
 
@@ -558,7 +594,12 @@ def _plot_group_trend(trend: pd.DataFrame, filename: str, title: str) -> None:
     _configure_plot()
     fig, ax = plt.subplots(figsize=(9, 4.5))
     for group, frame in trend.groupby("group"):
-        label = {"leeum": "리움미술관", "selected_neighbors": "인접·이태원권 후보 합계", "matched_controls": "매칭 통제군 합계"}.get(group, group)
+        label = {
+            "leeum": "리움미술관",
+            "matched_controls": "매칭 통제군 합계",
+        }.get(group, group)
+        if group == "independent_neighbors_equal_weight":
+            label = f"중첩 제외 인접상권 동일가중 평균 ({int(frame['area_count'].iloc[0])}곳)"
         ax.plot(frame["year"], frame["sales_index_2022_100"], marker="o", label=label)
     ax.axhline(100, color="grey", linewidth=.8, linestyle="--")
     ax.set_xticks(list(ANALYSIS_YEARS))
@@ -567,6 +608,31 @@ def _plot_group_trend(trend: pd.DataFrame, filename: str, title: str) -> None:
     ax.legend()
     ax.grid(alpha=.2)
     _savefig(LEEUM_FIGURE_DIR / filename)
+
+
+def _plot_neighbor_distribution(per_area: pd.DataFrame) -> None:
+    """Show the 2025 spread so an equal-weight average is not read as every area."""
+    _configure_plot()
+    shown = per_area.loc[per_area["year"].eq(2025)].copy()
+    target = shown.loc[shown["area_code"].eq(TARGET_CODE)].iloc[0]
+    neighbors = shown.loc[~shown["area_code"].eq(TARGET_CODE)].sort_values("sales_index_2022_100")
+    fig, ax = plt.subplots(figsize=(9, 6))
+    y = np.arange(len(neighbors))
+    ax.scatter(neighbors["sales_index_2022_100"], y, color="#4575b4", label=f"중첩 제외 인접상권 ({len(neighbors)}곳)")
+    ax.scatter([target["sales_index_2022_100"]], [-1], color="#d73027", marker="D", s=55, label="리움미술관")
+    for value, label, style in [
+        (neighbors["sales_index_2022_100"].mean(), "동일가중 평균", "--"),
+        (neighbors["sales_index_2022_100"].median(), "중앙값", ":"),
+    ]:
+        ax.axvline(value, color="#555555", linestyle=style, linewidth=1, label=f"{label} {value:.1f}")
+    labels = ["리움미술관", *neighbors["area_name"].tolist()]
+    ax.set_yticks(np.arange(-1, len(neighbors)), labels)
+    ax.axvline(100, color="grey", linewidth=.8, linestyle="-")
+    ax.set_xlabel("2025 매출지수 (각 상권의 2022=100)")
+    ax.set_title("리움미술관과 중첩 제거 가까운 인접상권의 2025 매출지수")
+    ax.legend(loc="lower right", fontsize=9)
+    ax.grid(axis="x", alpha=.2)
+    _savefig(LEEUM_FIGURE_DIR / "independent_neighbor_index_distribution_2025.png")
 
 
 def _plot_matching_balance(balance: pd.DataFrame) -> None:
@@ -594,133 +660,17 @@ def _format_number(value: object, digits: int = 1) -> str:
 
 
 def _write_reports(
-    reproduction: pd.DataFrame, quarterly: pd.DataFrame, change_points: pd.DataFrame, annual_total: pd.DataFrame,
-    decomposition: pd.DataFrame, industry: pd.DataFrame, contribution: pd.DataFrame, day_time: pd.DataFrame,
-    neighbors: pd.DataFrame, neighbor_aggregate: pd.DataFrame, controls: pd.DataFrame, balance: pd.DataFrame,
-    control_trend: pd.DataFrame, events: pd.DataFrame, redevelopment: pd.DataFrame, evidence: pd.DataFrame,
+    annual_total: pd.DataFrame, control_trend: pd.DataFrame, evidence: pd.DataFrame,
 ) -> None:
-    target = reproduction.iloc[0]
-    post = change_points.loc[change_points["metric"].eq("sales_amount")].iloc[0]
+    """Write the two maintained Leeum reports; detailed findings live in the validation report."""
     annual = annual_total.set_index("year")
-    target_decomp = decomposition.loc[decomposition["scope"].eq("leeum")].iloc[0]
-    neighbor_index = neighbor_aggregate.loc[neighbor_aggregate["year"].eq(2025)].set_index("group")["sales_index_2022_100"]
-    control_index = control_trend.loc[control_trend["year"].eq(2025)].set_index("group")["sales_index_2022_100"]
-    verdict = evidence.loc[evidence["hypothesis"].eq("final_classification"), "verdict"].iloc[0]
-    max_abs_smd = balance["standardized_difference"].abs().max()
-    write_text(LEEUM_REPORT_DIR / "00_reproduction_check.md", f"""# 00. 기존 5위 결과 재현
+    control_index = control_trend.loc[
+        control_trend["year"].eq(2025)
+    ].set_index("group")["sales_index_2022_100"]
+    verdict = evidence.loc[
+        evidence["hypothesis"].eq("final_classification"), "verdict"
+    ].iloc[0]
 
-## 확인된 사실
-
-`{TARGET_NAME}`(코드 `{TARGET_CODE}`)은 기존 결과에서 **{int(target['overall_rank'])}위 / {int(target['eligible_area_count'])}개**, CoreDeclineScore **{target['CoreDeclineScore']:.3f}**입니다. 장기·중기·최근 점수는 각각 {_format_number(target['long_score'], 3)}, {_format_number(target['medium_score'], 3)}, {_format_number(target['recent_score'], 3)}입니다.
-
-2021년 한식은 완결연도 조건을 충족하지 않습니다. 따라서 2021년 전체 외식업 합계를 2025년과 직접 비교하지 않았고, 순위 재현에는 업종별 완결 자료의 상대성과를 사용했습니다. 2022–2025는 완결연도 총량 추세로 별도 분석했습니다. 분기 총량에서도 2021Q1–Q3은 4개 중 3개 업종만 관측되어 비교·전년동기·변화점 계산에서 제외합니다.
-""")
-    write_text(LEEUM_REPORT_DIR / "01_quarterly_turning_points.md", f"""# 01. 분기 전환점과 2022년 고점
-
-## 확인된 사실
-
-2022년 총매출은 {_format_number(annual.at[2022, 'sales_amount'] / 100_000_000, 2)}억 원, 2025년은 {_format_number(annual.at[2025, 'sales_amount'] / 100_000_000, 2)}억 원입니다. 2022→2025 변화는 {_format_number(_pct(annual.at[2022, 'sales_amount'], annual.at[2025, 'sales_amount']) * 100, 1)}%입니다. 거래건수도 {_format_number(_pct(annual.at[2022, 'sales_transactions'], annual.at[2025, 'sales_transactions']) * 100, 1)}% 변했습니다.
-
-비교 가능한 분기만 사용한 평균수준 분할 탐색에서 총매출의 가장 낮은 오차 분할 후보는 **{_quarter_label(post['best_mean_break_quarter'])}**이며, 2022Q4 전후 평균 변화는 {_format_number(post['post_vs_pre_change'] * 100, 1)}%입니다. 이 전후 평균에는 불완전한 2021Q1–Q3을 넣지 않았습니다.
-
-## 해석
-
-2022년이 2023–2025보다 높은 관측 고점이라는 사실은 확인됩니다. 그러나 분기 평균의 변화점은 계절성·동시 사건을 통제하지 않은 기술통계이므로, 2022Q4의 특정 사건이 원인이라는 인과판정은 아닙니다.
-""")
-    write_text(LEEUM_REPORT_DIR / "02_sales_decomposition.md", f"""# 02. 2022→2025 매출 감소 분해
-
-## 확인된 사실
-
-매출 항등식 `매출 = 평균 점포 수 × 점포당 거래건수 × 건당 매출`로 분해하면, 리움미술관 상권의 로그 매출 변화는 {_format_number(target_decomp['log_sales_change'], 3)}입니다.
-
-- 점포 수 효과: {_format_number(target_decomp['log_store_effect'], 3)}
-- 점포당 거래 효과: {_format_number(target_decomp['log_transactions_per_store_effect'], 3)}
-- 건당 매출 효과: {_format_number(target_decomp['log_sales_per_transaction_effect'], 3)}
-
-## 해석
-
-점포 수가 거의 유지된 상태에서 **점포당 거래는 약화**했고, **건당 매출은 상승하여 일부를 완충**했음을 보여주는 회계적 분해입니다. 방문객 감소, 가격 변화, 상권 이동 중 어느 것이 원인인지는 이 항등식만으로 구분할 수 없습니다.
-""")
-    write_text(LEEUM_REPORT_DIR / "03_industry_analysis.md", f"""# 03. 업종별 재편 검증
-
-## 확인된 사실
-
-2022→2025 매출 감소 기여는 아래 표와 같습니다.
-
-{markdown_table(contribution, ['industry_name', 'sales_2022', 'sales_2025', 'sales_change_2022_2025', 'share_of_observed_sales_loss'], 15)}
-
-## 해석
-
-모든 관측 업종의 2022→2025 매출은 감소했습니다. 점포 총수만으로 업종 교체를 확정할 수는 없고, 주소·사업체 단위의 연속 관측도 없습니다. 따라서 이 표는 업종별 **절대 감소액**만 보여주며, 업종 재편의 증거로 해석하지 않습니다.
-""")
-    write_text(LEEUM_REPORT_DIR / "04_day_time_customer_analysis.md", f"""# 04. 주말·시간대·고객구성 분석
-
-## 확인된 사실
-
-원자료에는 주중/주말, 시간대, 성별·연령대별 매출·거래가 있습니다. 연도별 지표는 `outputs/leeum/day_time_customer_analysis.csv`에 저장했습니다.
-
-## 해석
-
-주말·야간 비중의 하락은 관광·방문형 수요 약화와 부합할 수 있고, 일상 시간대의 하락은 배후수요 약화와 부합할 수 있습니다. 그러나 이 지표는 카드매출 구성이지 실제 방문객의 출발지·목적지를 추적한 자료가 아니므로, 방문객 이동 자체를 증명하지는 못합니다.
-""")
-    write_text(LEEUM_REPORT_DIR / "05_spatial_displacement.md", f"""# 05. 인접 상권·공간 재배치 가설
-
-## 확인된 사실
-
-중심점 1km 이내 또는 한남·이태원·경리단·해방촌·한강진 명칭 후보를 기준으로 {len(neighbors)}개 상권을 비교했습니다. 2025년 매출지수(2022=100)는 리움미술관 {_format_number(neighbor_index.get('leeum'), 1)}, 후보권역 합계 {_format_number(neighbor_index.get('selected_neighbors'), 1)}입니다.
-
-## 해석
-
-대상이 하락하고 주변권역의 **선정 상권 합계**가 유지·증가하면 공간 재배치와 **일치하는 패턴**일 수 있습니다. 이는 상권별 평균이나 동일 업종 보정치가 아닌 합계 지수이며, 이동경로·점포 이전 주소 자료가 없으므로 재배치의 인과 증거는 아닙니다.
-""")
-    write_text(LEEUM_REPORT_DIR / "06_matched_control_analysis.md", f"""# 06. 2022년 유사 상권 비교
-
-## 확인된 사실
-
-동일 상권유형 안에서 2022년 총매출·거래·점포 수·점포당 매출·일식/양식/커피 비중이 가까운 7개 상권을 비교군으로 선택했습니다. 2025년 매출지수(2022=100)는 리움미술관 {_format_number(control_index.get('leeum'), 1)}, 통제군 합계 {_format_number(control_index.get('matched_controls'), 1)}입니다.
-
-{markdown_table(balance, ['feature', 'target_2022', 'controls_mean_2022', 'standardized_difference'], 10)}
-
-균형 진단의 최대 절대 표준화 차이는 **{max_abs_smd:.2f}**이다. 통상적인 0.25 기준을 크게 넘으므로, 이 비교는 ‘유사 통제군에 대한 효과 추정’이 아니라 관측 추세를 보조적으로 대조한 결과다.
-
-## 해석
-
-통제군보다 큰 하락은 상대적 약화의 기술적 증거입니다. 임대료·관광객·시설 특성 등 미관측 변수가 있어 인과효과나 반사실적 결과로 해석하지 않습니다.
-""")
-    write_text(LEEUM_REPORT_DIR / "07_redevelopment_effect.md", f"""# 07. 재개발 간접영향 가설
-
-## 확인된 사실
-
-현재 프로젝트에는 한남2·3구역의 경계, 이주·철거 시점, 점포 주소·거주인구 자료가 없습니다.
-
-{markdown_table(redevelopment, list(redevelopment.columns), 10)}
-
-## 판정
-
-재개발의 직접 중첩·경계 인접·일정 거리 영향 중 어느 것도 현재 자료로 검증할 수 없습니다. 따라서 재개발은 가능한 맥락이지, 본 결과에서 확인된 원인이 아닙니다.
-""")
-    write_text(LEEUM_REPORT_DIR / "08_exhibition_spillover.md", f"""# 08. 리움 전시·방문객 파급 가설
-
-## 확인된 사실
-
-공식 리움 페이지로 전시·프로그램 시점은 확인했지만, 전시별 방문객 수·매표 수·주변 소비 경로 자료는 제공되지 않았습니다.
-
-{markdown_table(events.loc[events['category'].eq('leeum_program')], ['event_date', 'event', 'source', 'use_in_analysis'], 10)}
-
-## 판정
-
-전시가 2022년 고점과 시간적으로 겹친다는 사실만으로 매출 고점의 원인이라고 할 수 없습니다. 방문객 계량자료가 확보될 때만 파급효과를 분석합니다.
-""")
-    write_text(LEEUM_REPORT_DIR / "09_store_turnover.md", f"""# 09. 점포 교체·업종 재편의 한계
-
-## 확인된 사실
-
-2022–2025 평균 점포 수·개업·폐업은 `quarterly_metrics.csv`와 `industry_deep_dive.csv`에 있습니다. 점포 총수의 안정은 점포 구성의 안정과 동의어가 아닙니다.
-
-## 판정
-
-점포 주소·사업체 식별자가 없어 동일 점포의 폐업·이전·업종전환·고급점포 진입을 추적할 수 없습니다. 업종 재편은 **부분 지지 또는 검증 불가**로만 판정합니다.
-""")
     write_text(LEEUM_REPORT_DIR / "leeum_one_page_brief.md", f"""# 리움미술관 상권 한 장 브리프
 
 ## 결론
@@ -778,7 +728,7 @@ def _evidence(
     rows = [
         {"hypothesis": "H1_2022_temporary_peak", "predicted_pattern": "2022 only is unusually high and later years return near a normal level", "observed_facts": f"2022→2025 sales {sales_2022_2025:.1%}; best mean split {_quarter_label(cp['best_mean_break_quarter'])}", "supporting_evidence": "2022 is the highest complete annual total", "counter_evidence": f"2025 remains materially below 2023 and 2024; transactions {tx_2022_2025:.1%}", "verdict": "partially_supported", "confidence": "medium", "interpretation_boundary": "High point is observed; normalisation versus a counterfactual is not identified."},
         {"hypothesis": "H2_itaewon_external_shock", "predicted_pattern": "A sustained post-2022Q4 fall, especially visitor-oriented weekend/evening demand and neighbouring areas", "observed_facts": f"post/pre sales mean change {cp['post_vs_pre_change']:.1%}; event date is verified", "supporting_evidence": "The official event date falls in 2022Q4", "counter_evidence": "No visitor origin, exposure intensity, or causal control is available; break timing can reflect concurrent changes", "verdict": "not_verifiable", "confidence": "low", "interpretation_boundary": "Temporal coincidence is not causal attribution."},
-        {"hypothesis": "H3_spatial_reallocation", "predicted_pattern": "Leeum falls while nearby candidate areas or same industries rise", "observed_facts": f"2025 index: Leeum {neighbor.get('leeum', np.nan):.1f}, neighbours {neighbor.get('selected_neighbors', np.nan):.1f}", "supporting_evidence": "Relative divergence is observable if candidate aggregate is higher", "counter_evidence": "No movement paths, store-address transitions, or origin-destination data", "verdict": "possible" if neighbor.get("selected_neighbors", 0) > neighbor.get("leeum", 0) else "not_supported", "confidence": "low", "interpretation_boundary": "Spatial co-movement is descriptive only."},
+        {"hypothesis": "H3_spatial_reallocation", "predicted_pattern": "Leeum falls while independent nearby areas or same industries rise", "observed_facts": f"2025 index: Leeum {neighbor.get('leeum', np.nan):.1f}, independent-neighbour equal-weight mean {neighbor.get('independent_neighbors_equal_weight', np.nan):.1f}", "supporting_evidence": "Independent-area indices diverge descriptively after removing the verified overlapping tourism-zone candidate", "counter_evidence": "No movement paths, store-address transitions, or origin-destination data; an equal-weight comparison is not evidence of transfer", "verdict": "possible" if neighbor.get("independent_neighbors_equal_weight", 0) > neighbor.get("leeum", 0) else "not_supported", "confidence": "low", "interpretation_boundary": "Spatial co-movement is descriptive only; it does not identify consumer displacement."},
         {"hypothesis": "H4_redevelopment_indirect_effect", "predicted_pattern": "Dated redevelopment exposure overlaps residential/daytime demand weakening", "observed_facts": "No redevelopment boundary or dated relocation/demolition input available", "supporting_evidence": "None in the provided data", "counter_evidence": "No spatial or timing evidence", "verdict": "not_verifiable", "confidence": "low", "interpretation_boundary": "Redevelopment cannot be inserted as an assumed cause."},
         {"hypothesis": "H5_industry_recomposition", "predicted_pattern": "Total stores are stable but industry shares/turnover change", "observed_facts": f"2022→2025 stores {store_2022_2025:.1%}; every observed industry has lower sales: {', '.join(industry_loss)}", "supporting_evidence": "Total average store count is broadly stable", "counter_evidence": "All observed industries decline and there is no business/address identifier to observe replacement", "verdict": "not_supported", "confidence": "medium", "interpretation_boundary": "Stable total stores do not establish industry reorganization; the available pattern is broad sales decline."},
         {"hypothesis": "H6_underlying_demand_weakening", "predicted_pattern": "Transactions and transactions per store fall even if store count remains stable", "observed_facts": f"transactions {tx_2022_2025:.1%}; stores {store_2022_2025:.1%}; tx/store log effect {decomp['log_transactions_per_store_effect']:.3f}", "supporting_evidence": "Transaction deterioration is not explained by store count alone", "counter_evidence": "Demand source (resident, worker, tourist) is not observed", "verdict": "partially_supported", "confidence": "medium", "interpretation_boundary": "Transaction-based weakening is observed; its demand source is not identified."},
@@ -819,7 +769,6 @@ def run() -> dict[str, object]:
     save_csv(contribution, LEEUM_DIR / "industry_contribution.csv")
     day_time = annual_total[[column for column in annual_total.columns if column in {"year", "weekday_sales", "weekend_sales", "weekend_sales_share", "evening_sales_share", "night_sales_share", "female_sales_share", "sales_amount", "sales_transactions"}]].copy()
     save_csv(day_time, LEEUM_DIR / "day_time_customer_analysis.csv")
-    save_csv(day_time, LEEUM_DIR / "day_time_metrics.csv")
 
     benchmark = annual_benchmarks(annual)
     benchmark_data = benchmark.rename(columns={"seoul_sales_amount": "sales_amount", "seoul_sales_transactions": "sales_transactions", "seoul_avg_store_count": "store_count"})[["year", "industry_code", "sales_amount", "sales_transactions", "store_count"]]
@@ -831,7 +780,6 @@ def run() -> dict[str, object]:
     decomposition = pd.concat([decomposition, pd.DataFrame([_decomposition(control_data, "matched_controls")])], ignore_index=True)
     save_csv(decomposition, LEEUM_DIR / "sales_decomposition.csv")
     save_csv(controls, LEEUM_DIR / "matched_controls.csv")
-    save_csv(controls, LEEUM_DIR / "matched_controls_2022.csv")
     save_csv(balance, LEEUM_DIR / "matching_balance.csv")
     save_csv(control_trend, LEEUM_DIR / "matched_control_trend.csv")
 
@@ -839,8 +787,8 @@ def run() -> dict[str, object]:
     neighbors = _neighbors(annual, spatial)
     neighbor_comparison, neighbor_aggregate = _neighbor_trend(annual, neighbors)
     save_csv(neighbors, LEEUM_DIR / "neighbor_areas.csv")
+    save_csv(neighbors.attrs.get("exclusions", pd.DataFrame(columns=["area_code", "excluded_due_to_overlap_with", "overlap_estimate_m2"])), LEEUM_DIR / "neighbor_overlap_exclusions.csv")
     save_csv(neighbor_comparison, LEEUM_DIR / "neighbor_comparison.csv")
-    save_csv(neighbor_aggregate, LEEUM_DIR / "area_aggregate.csv")
     save_csv(neighbor_aggregate, LEEUM_DIR / "neighbor_aggregate.csv")
     redevelopment = pd.DataFrame([{"target_area_code": TARGET_CODE, "redevelopment_boundary_data_available": False, "store_address_data_available": False, "dated_relocation_or_demolition_data_available": False, "verdict": "not_verifiable", "note": "No redevelopment GIS/timing or store-level location input in project."}])
     save_csv(redevelopment, LEEUM_DIR / "redevelopment_spatial_check.csv")
@@ -849,7 +797,6 @@ def run() -> dict[str, object]:
     save_csv(events.loc[events["category"].eq("leeum_program")], LEEUM_DIR / "exhibition_timeline.csv")
     store_turnover = industry[["year", "industry_code", "industry_name", "store_count", "open_count", "close_count", "sales_amount", "sales_transactions"]].copy()
     save_csv(store_turnover, LEEUM_DIR / "store_turnover.csv")
-    save_csv(store_turnover, LEEUM_DIR / "turnover_reorganization.csv")
 
     _plot_quarterly(quarterly)
     _plot_yoy(quarterly)
@@ -865,15 +812,14 @@ def run() -> dict[str, object]:
     write_text(LEEUM_MAP_DIR / "leeum_redevelopment_map.html", """<!doctype html>
 <html lang=\"ko\"><meta charset=\"utf-8\"><title>재개발 공간 검증</title>
 <body><h1>재개발 공간 검증: 자료 미제공</h1><p>현재 프로젝트에는 한남2·3구역 경계·사업 단계별 날짜·점포 주소 자료가 없어 중첩 또는 거리 분석을 수행하지 않았습니다.</p></body></html>""")
-    _plot_group_trend(neighbor_aggregate, "leeum_vs_neighbors.png", "리움미술관과 인접·이태원권 후보 상권")
+    _plot_group_trend(neighbor_aggregate, "leeum_vs_neighbors.png", "리움미술관과 중첩 제거 가까운 5개 상권의 동일가중 지수")
+    _plot_neighbor_distribution(neighbor_comparison)
     _plot_group_trend(control_trend, "leeum_vs_controls.png", "리움미술관과 2022년 유사 상권")
     _plot_matching_balance(balance)
 
     evidence = _evidence(reproduction, annual_total, change_points, decomposition, contribution, neighbor_aggregate, control_trend, redevelopment, events, balance)
     save_csv(evidence, LEEUM_DIR / "leeum_evidence_matrix.csv")
-    save_csv(evidence, LEEUM_DIR / "evidence_matrix.csv")
-    save_csv(evidence, LEEUM_DIR / "leeum_hypothesis_verdict.csv")
-    _write_reports(reproduction, quarterly, change_points, annual_total, decomposition, industry, contribution, day_time, neighbors, neighbor_aggregate, controls, balance, control_trend, events, redevelopment, evidence)
+    _write_reports(annual_total, control_trend, evidence)
     summary = pd.DataFrame([
         {"section": "reproduction", "metric": "overall_rank", "value": int(reproduction.iloc[0]["overall_rank"]), "note": "Original score calculation reproduced"},
         {"section": "reproduction", "metric": "CoreDeclineScore", "value": float(reproduction.iloc[0]["CoreDeclineScore"]), "note": "Original score calculation reproduced"},

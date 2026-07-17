@@ -1,16 +1,6 @@
-﻿area_code,area_name,area_type,district,administrative_dong,centroid_distance_m,within_500m,within_1km,name_candidate,selection_reason
-3110095,한강진역 3번,골목상권,용산구,한남동,346.5544690232691,True,True,True,centroid_within_1km; itaewon_hannam_name_candidate
-3120046,이태원(이태원역),발달상권,용산구,이태원1동,386.4324002979046,True,True,True,centroid_within_1km; itaewon_hannam_name_candidate
-3001491,이태원 관광특구,관광특구,용산구,이태원1동,461.351276144328,True,True,True,centroid_within_1km; itaewon_hannam_name_candidate
-3110093,우사단길,골목상권,용산구,한남동,536.9580989239291,False,True,False,centroid_within_1km
-3110085,경리단길남측,골목상권,용산구,이태원2동,629.9460294342683,False,True,True,centroid_within_1km; itaewon_hannam_name_candidate
-3110087,이태원엔틱가구거리,골목상권,용산구,이태원1동,651.5558303015944,False,True,True,centroid_within_1km; itaewon_hannam_name_candidate
-3110082,용산구청,골목상권,용산구,이태원1동,812.2567328129696,False,True,False,centroid_within_1km
-3110096,한남힐사이드아파트,골목상권,용산구,한남동,817.7634132192513,False,True,True,centroid_within_1km; itaewon_hannam_name_candidate
-3110084,경리단길북측,골목상권,용산구,이태원2동,818.2640160730521,False,True,True,centroid_within_1km; itaewon_hannam_name_candidate
-3130061,이태원시장,전통시장,용산구,이태원1동,859.269457155321,False,True,True,centroid_within_1km; itaewon_hannam_name_candidate
-3110092,NH농협은행 보광동지점,골목상권,용산구,보광동,884.2126441077395,False,True,False,centroid_within_1km
-3120047,한남오거리,발달상권,용산구,한남동,921.5883028771578,False,True,True,centroid_within_1km; itaewon_hannam_name_candidate
-3110081,해방촌 남동측,골목상권,용산구,용산2가동,1460.0291092988523,False,False,True,itaewon_hannam_name_candidate
-3110080,해방촌예술마을,골목상권,용산구,후암동,1767.5601828509264,False,False,True,itaewon_hannam_name_candidate
-3110949,한남IC,골목상권,강남구,신사동,2562.285893494323,False,False,True,itaewon_hannam_name_candidate
+﻿area_code,area_name,area_type,district,administrative_dong,centroid_distance_m,within_500m,within_1km,candidate_reason,overlap_screen,selection_reason
+3110095,한강진역 3번,골목상권,용산구,한남동,346.5544690232691,True,True,centroid_within_1km,retained after verified tourism-zone/itaewon-station overlap screen,centroid_within_1km; overlap_screen_retained
+3120046,이태원(이태원역),발달상권,용산구,이태원1동,386.4324002979046,True,True,centroid_within_1km,retained after verified tourism-zone/itaewon-station overlap screen,centroid_within_1km; overlap_screen_retained
+3110093,우사단길,골목상권,용산구,한남동,536.9580989239291,False,True,centroid_within_1km,retained after verified tourism-zone/itaewon-station overlap screen,centroid_within_1km; overlap_screen_retained
+3110085,경리단길남측,골목상권,용산구,이태원2동,629.9460294342683,False,True,centroid_within_1km,retained after verified tourism-zone/itaewon-station overlap screen,centroid_within_1km; overlap_screen_retained
+3110087,이태원엔틱가구거리,골목상권,용산구,이태원1동,651.5558303015944,False,True,centroid_within_1km,retained after verified tourism-zone/itaewon-station overlap screen,centroid_within_1km; overlap_screen_retained

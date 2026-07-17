@@ -1,9 +1,9 @@
-﻿group,year,sales_amount,sales_transactions,store_count,sales_index_2022_100
-leeum,2022,8317066110.0,282150.0,21.25,100.0
-leeum,2023,7643848529.0,247271.0,21.75,91.90558819545082
-leeum,2024,6552204107.0,204463.0,22.25,78.78023356243348
-leeum,2025,4835389560.0,143705.0,22.25,58.13816430034364
-selected_neighbors,2022,657254867886.0,20404106.0,2241.5,100.0
-selected_neighbors,2023,613335210506.0,19272641.0,2329.25,93.31771288035287
-selected_neighbors,2024,635371609216.0,19517402.0,2305.25,96.67050641399044
-selected_neighbors,2025,640154457595.0,18763725.0,2434.0,97.39820712990655
+﻿group,year,sales_index_2022_100,median_sales_index_2022_100,area_count,aggregation_method
+leeum,2022,100.0,100.0,1,target area
+leeum,2023,91.90558819545082,91.90558819545082,1,target area
+leeum,2024,78.78023356243348,78.78023356243348,1,target area
+leeum,2025,58.13816430034364,58.13816430034364,1,target area
+independent_neighbors_equal_weight,2022,100.0,100.0,5,equal-weight mean of each independent area's 2022=100 index
+independent_neighbors_equal_weight,2023,96.67612047078146,92.25455216009172,5,equal-weight mean of each independent area's 2022=100 index
+independent_neighbors_equal_weight,2024,99.7574278029673,97.05976300906902,5,equal-weight mean of each independent area's 2022=100 index
+independent_neighbors_equal_weight,2025,95.42419767415856,94.40938825178014,5,equal-weight mean of each independent area's 2022=100 index

@@ -21,7 +21,7 @@
 | industry_deep_dive.csv / industry_trends.png | industry index | 2022=100; chart uses 2022→2025 | within-industry change from 2022 | comparison to a 2021-based percentage without naming the different baseline |
 | industry_contribution.csv / industry_contribution.png | absolute loss contribution | 2022→2025 | which industry contributes more won loss amount | proof of industry reorganization or relative percentage decline |
 | sales_decomposition.csv | accounting decomposition | 2022→2025 | mechanical components associated with the sales change | customer origin, price cause, or causal mechanism |
-| neighbor_aggregate.csv | candidate-area aggregate index | 2022=100 | descriptive divergence from this selected aggregate | per-area average effect or proven spatial displacement |
+| neighbor_aggregate.csv | independent-neighbour equal-weight index | 2022=100 | descriptive divergence from the retained independent-neighbour average | proven spatial displacement or a common-shock counterfactual |
 | matched_control_trend.csv | imbalanced comparison aggregate index | 2022=100 | supplementary descriptive comparison only | causal treatment effect or counterfactual |
 
 ## 업종 기준연도 대조

@@ -1,0 +1,4 @@
+﻿selection_rank,area_code,area_name,area_type,district,administrative_dong,centroid_distance_m,overlap_with_leeum_est_m2,일반의류,화장품
+1,3110095,한강진역 3번,골목상권,용산구,한남동,346.5544690232691,0.0,16,0
+2,3120046,이태원(이태원역),발달상권,용산구,이태원1동,386.4324002979046,0.0,16,16
+3,3110093,우사단길,골목상권,용산구,한남동,536.9580989239291,0.0,16,3
