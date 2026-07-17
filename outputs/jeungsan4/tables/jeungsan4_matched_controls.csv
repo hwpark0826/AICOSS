@@ -1,0 +1,9 @@
+﻿area_code,area_name,area_type,total_sales,total_transactions,total_stores,korean_sales,korean_sales_share,sales_per_store,matching_distance,selection,district,administrative_dong
+3110451,증산역 4번,골목상권,1659024375.0,73080.0,54.5,1058166406.0,0.637824508154077,30440814.220183488,0.0,target,은평구,증산동
+3110456,구산보건지소,골목상권,1729517043.0,112983.0,48.25,1154039489.0,0.6672611256829344,35844912.808290154,0.23987339023922183,nearest neighbour; same area type; standardized 2021 features,은평구,구산동
+3111063,강동구립 천호도서관,골목상권,2262260218.0,78691.0,44.25,1379087984.0,0.6096062570641022,51124524.70056497,0.3187158628567486,nearest neighbour; same area type; standardized 2021 features,강동구,천호3동
+3110599,신월1파출소,골목상권,1911937131.0,111141.0,42.75,1153573414.0,0.6033532145466765,44723675.578947365,0.37120766136042116,nearest neighbour; same area type; standardized 2021 features,양천구,신월1동
+3110139,자양4동주민센터,골목상권,3393753073.0,89770.0,57.5,2386411972.0,0.703177844901505,59021792.573913045,0.38873609747418225,nearest neighbour; same area type; standardized 2021 features,광진구,자양4동
+3110199,홍릉시장,골목상권,2168310050.0,76241.0,42.5,1502784410.0,0.6930671238645045,51019060.0,0.39492634777920416,nearest neighbour; same area type; standardized 2021 features,동대문구,제기동
+3110297,경동고등학교,골목상권,2582931115.0,84391.0,49.75,1907609183.0,0.7385443506107595,51918213.36683417,0.4108089245834009,nearest neighbour; same area type; standardized 2021 features,성북구,삼선동
+3110732,가산초등학교(세일중학교),골목상권,3625937212.0,145181.0,50.75,2292337592.0,0.632205539691513,71447038.66009852,0.4239738711930529,nearest neighbour; same area type; standardized 2021 features,금천구,독산1동

@@ -1,0 +1,2 @@
+﻿area_code,area_name,district,area_type,eligible_area_count,overall_rank,CoreDeclineScore,long_score,medium_score,recent_score,start_food_stores,analysis_avg_food_stores,sales_weight_coverage,store_weight_coverage,valid_industry_count,sensitivity_mean_rank,sensitivity_rank_std,top20_appearance_rate,early_warning_rank,EarlyWarningAdjustedScore
+3110091,리움미술관,용산구,골목상권,847,5,2.2306251614359773,2.850825233733541,1.6253190293229969,1.5955311489538315,22.0,21.9,1.0,1.0,4,21.363636363636363,36.666804407454784,0.8181818181818182,3,2.241781580626997

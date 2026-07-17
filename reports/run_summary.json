@@ -1,0 +1,62 @@
+{
+  "input_files": 11,
+  "sales_rows_food": 142554,
+  "store_rows_food": 258931,
+  "quarter_panel_rows": 142554,
+  "annual_panel_rows": 35312,
+  "eligible_areas": 847,
+  "top10": [
+    {
+      "overall_rank": 1,
+      "area_name": "증산역 4번",
+      "CoreDeclineScore": 3.1783692706086897
+    },
+    {
+      "overall_rank": 2,
+      "area_name": "열정도",
+      "CoreDeclineScore": 2.4399949793279885
+    },
+    {
+      "overall_rank": 3,
+      "area_name": "벌말어린이공원",
+      "CoreDeclineScore": 2.3034493371730917
+    },
+    {
+      "overall_rank": 4,
+      "area_name": "광진정보도서관",
+      "CoreDeclineScore": 2.249943659594627
+    },
+    {
+      "overall_rank": 5,
+      "area_name": "리움미술관",
+      "CoreDeclineScore": 2.2306251614359773
+    },
+    {
+      "overall_rank": 6,
+      "area_name": "청구역 3번",
+      "CoreDeclineScore": 2.1481529088619746
+    },
+    {
+      "overall_rank": 7,
+      "area_name": "창동역 2번",
+      "CoreDeclineScore": 2.074738976459317
+    },
+    {
+      "overall_rank": 8,
+      "area_name": "수궁동주민센터",
+      "CoreDeclineScore": 2.0345864145012467
+    },
+    {
+      "overall_rank": 9,
+      "area_name": "석촌고분역 4번",
+      "CoreDeclineScore": 2.006270806049586
+    },
+    {
+      "overall_rank": 10,
+      "area_name": "천호1동주민센터",
+      "CoreDeclineScore": 1.9788053314035825
+    }
+  ],
+  "parquet_written": true,
+  "early_warning": true
+}

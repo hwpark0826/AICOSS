@@ -1,0 +1,15 @@
+# Source and derived data panels are excluded from the public repository.
+/data/raw/
+/data/interim/
+/data/processed/
+
+# Local runtime and editor artefacts.
+/.deps/
+/.mplconfig/
+/.agents/
+/.codex/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.DS_Store
+Thumbs.db

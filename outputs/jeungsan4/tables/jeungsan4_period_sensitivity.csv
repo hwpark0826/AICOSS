@@ -1,0 +1,6 @@
+﻿scenario,period,eligible_areas,target_included,target_rank,target_score,top20
+start_2021_to_2025,2021–2025,847,True,1.0,3.3482733602866217,True
+start_2022_to_2025,2022–2025,853,True,1.0,3.2495918147000658,True
+start_2023_to_2025,2023–2025,856,False,,,False
+start_2024_to_2025,2024–2025,866,True,2.0,2.873978048956531,True
+recent_8q_endpoint,2024Q1–2025Q4 (8 complete quarters),866,True,2.0,2.873978048956531,True

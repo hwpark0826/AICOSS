@@ -1,0 +1,20 @@
+﻿area_code,area_name,area_type,district,administrative_dong,centroid_distance_m,boundary_distance_m,adjacent_boundary_10m,within_centroid_1km,same_administrative_dong,name_candidate,selection_reason
+3110498,증산역 1번,골목상권,서대문구,북가좌2동,173.97126199461795,0.0,True,True,False,True,boundary_within_10m; centroid_within_1km; name_candidate
+3130162,증산골목시장,전통시장,은평구,증산동,193.01036241611484,0.0,True,True,True,True,boundary_within_10m; centroid_within_1km; same_administrative_dong; name_candidate
+3110452,새절역 3번,골목상권,은평구,신사2동,371.9032132154816,0.0,True,True,False,False,boundary_within_10m; centroid_within_1km
+3130163,응암오거리상점가,전통시장,은평구,응암3동,426.01056324931665,26.651799999992363,False,True,False,False,centroid_within_1km
+3130165,"대림골목시장(대림시장, 양지시장)",전통시장,은평구,응암3동,495.1009997970111,221.47909999999683,False,True,False,False,centroid_within_1km
+3110461,새절역 2번,골목상권,은평구,응암3동,509.87253309037936,46.751599999988684,False,True,False,False,centroid_within_1km
+3110449,증산역 3번,골목상권,은평구,증산동,567.7358540730011,0.0,True,True,True,True,boundary_within_10m; centroid_within_1km; same_administrative_dong; name_candidate
+3110446,내를건너서숲으로도서관,골목상권,은평구,신사2동,605.0264457029957,74.41434328081132,False,True,False,False,centroid_within_1km
+3110469,응암정보도서관,골목상권,은평구,응암3동,609.6310359553555,144.90340000001015,False,True,False,False,centroid_within_1km
+3110495,북가좌2동주민센터,골목상권,서대문구,북가좌2동,661.1883241558338,0.0,True,True,False,True,boundary_within_10m; centroid_within_1km; name_candidate
+3110463,응암3동주민센터,골목상권,은평구,응암3동,692.1690544946372,121.0304700737848,False,True,False,False,centroid_within_1km
+3130161,증산종합시장,전통시장,은평구,증산동,813.1740281145236,195.6410242221839,False,True,True,True,centroid_within_1km; same_administrative_dong; name_candidate
+3110471,응암동우체국,골목상권,은평구,응암2동,831.206953772645,327.89079999999376,False,True,False,False,centroid_within_1km
+3110499,연가초등학교,골목상권,서대문구,북가좌2동,832.2655826117045,158.71565170323507,False,True,False,False,centroid_within_1km
+3110496,모래내우체국,골목상권,서대문구,북가좌2동,876.0690612046518,300.6880999999703,False,True,False,False,centroid_within_1km
+3110453,신사1동주민센터,골목상권,은평구,신사1동,991.6577030407216,275.2082999999984,False,True,False,False,centroid_within_1km
+3110444,수색성당,골목상권,은평구,증산동,1193.3737888859466,459.97306931936515,False,False,True,True,same_administrative_dong; name_candidate
+3110493,북가좌초등학교,골목상권,서대문구,북가좌1동,1311.4343292746305,687.516599998984,False,False,False,True,name_candidate
+3120098,DMC(디지털미디어시티),발달상권,마포구,상암동,2088.5214866024244,1050.2650999999896,False,False,False,True,name_candidate

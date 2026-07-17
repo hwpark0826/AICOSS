@@ -1,0 +1,6 @@
+﻿section,metric,value,note
+reproduction,overall_rank,5,Original score calculation reproduced
+reproduction,CoreDeclineScore,2.2306251614359773,Original score calculation reproduced
+annual_2022_2025,sales_change,-0.4186183569965636,"Complete-year total, not a causal estimate"
+annual_2022_2025,transactions_change,-0.4906787169945065,"Complete-year total, not a causal estimate"
+final,classification,2022년 고점 이후 거래기반 약화 관측; 구조적 쇠퇴 원인은 식별 불가,"The score is reproduced, but this is not a structural-decline causal conclusion."

@@ -1,0 +1,5 @@
+﻿event_date,event,category,source,status,use_in_analysis
+2022-10-29,이태원 참사,external_shock,https://www.mois.go.kr/plan2023/download/plan2023_RNSS.pdf,date_verified,2022Q4 event marker only; causal effect is not inferred
+2022-03-02,아트스펙트럼 2022,leeum_program,https://www.leeumhoam.org/leeum/edu/publication/28?params=Y,date_verified,Exhibition/program timing only; no visitor count supplied
+2022-09-02,구름산책자,leeum_program,https://www.leeumhoam.org/leeum/exhibition/53?params=Y,date_verified,Exhibition timing only; no visitor count supplied
+,한남2·3구역 재개발 이주·철거,redevelopment,,not_verifiable_from_available_data,"No dated boundary, migration, demolition, or store-address data supplied"

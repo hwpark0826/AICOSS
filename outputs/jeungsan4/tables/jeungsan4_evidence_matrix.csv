@@ -1,0 +1,10 @@
+﻿condition,result,evidence,interpretation
+1_missingness_robustness,mixed_low_coverage,"A1 rank=1, A3 rank=1, A4 included=False",Missingness alternatives do not provide an unqualified robustness pass when the 80% coverage screen excludes the target.
+2_boundary_consistency,supports,"features=1, area difference=0.005m², representative-coordinate gap=151.0m",One polygon feature and matching reported area support the current spatial unit. The DBF representative coordinate need not equal a geometric centroid; historical boundary change is unverified.
+3_base_year_robustness,supports,top20 in 3 of 4 start-year endpoint ranks,Changing the start year tests whether 2021 alone creates the ranking.
+4_absolute_common_industry_decline,supports,"common-industry sales -72.7%, transactions -67.1%",Absolute change is evaluated only on common observed industries.
+5_operating_demand_decomposition,supports,log tx/store contribution=-0.366,"A negative point indicates declining transactions per operating store, not only fewer stores."
+6_spatial_reallocation,possible,"2025 index target=20.3, neighbor=118.4",A nearby relative increase is descriptive evidence only; origin-destination or store-move data are absent.
+7_external_shock,not_verifiable,"No dated, geocoded project external-event data",This hypothesis is not filled with conjecture.
+8_matched_control_comparison,supports,"2025 index target=20.3, controls=161.0",Nearest-neighbour controls are descriptive and not causal PSM.
+final_classification,상대적 약화,supports=5/8; first_four_all=False; data_reliability_medium=False,Predeclared decision rule applied without assuming missing external facts.

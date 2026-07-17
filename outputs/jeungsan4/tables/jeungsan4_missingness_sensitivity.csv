@@ -1,0 +1,5 @@
+﻿scenario,rule,eligible_areas,target_included,target_rank,rank_change_vs_baseline,target_score,top20,target_baseline_sales_coverage,baseline_eligible_count
+A1_common_industries_all_2021_2025,Use only industries valid in every full year 2021–2025,815,True,1.0,0.0,3.3245780482276555,True,0.7447184216325936,847
+A2_baseline_drop_and_reweight,Existing endpoint-complete industries; remaining start-year weights renormalized,847,True,1.0,0.0,3.1783692706086897,True,0.7447184216325936,847
+A3_missing_industry_equals_seoul_average,Start-year industries without endpoint metric receive relative value zero,891,True,1.0,0.0,3.265316246432741,True,0.7447184216325936,847
+A4_sales_coverage_at_least_80pct,"Baseline calculation, comparison set restricted to long sales coverage >=80%",825,False,,,,False,0.7447184216325936,847

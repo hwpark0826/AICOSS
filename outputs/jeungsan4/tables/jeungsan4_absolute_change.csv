@@ -1,0 +1,51 @@
+﻿comparison,industry_codes,metric,start_2021,end_2025,absolute_change,percent_change,comparability_note
+all_observed_endpoint,"CS100001,CS100002,CS100007,CS100008,CS100009",sales_amount,1659024375.0,337060671.0,-1321963704.0,-0.7968319959132608,endpoint industry composition differs; not a pure same-industry comparison
+all_observed_endpoint,"CS100001,CS100002,CS100007,CS100008,CS100009",sales_transactions,73080.0,18839.0,-54241.0,-0.7422140120415983,endpoint industry composition differs; not a pure same-industry comparison
+all_observed_endpoint,"CS100001,CS100002,CS100007,CS100008,CS100009",store_count,54.5,21.0,-33.5,-0.6146788990825688,endpoint industry composition differs; not a pure same-industry comparison
+all_observed_endpoint,"CS100001,CS100002,CS100007,CS100008,CS100009",year_end_store_count,55.0,21.0,-34.0,-0.6181818181818182,endpoint industry composition differs; not a pure same-industry comparison
+all_observed_endpoint,"CS100001,CS100002,CS100007,CS100008,CS100009",sales_per_store,30440814.220183488,16050508.142857144,-14390306.077326344,-0.4727306560606054,endpoint industry composition differs; not a pure same-industry comparison
+all_observed_endpoint,"CS100001,CS100002,CS100007,CS100008,CS100009",transactions_per_store,1340.9174311926606,897.0952380952381,-443.82219309742254,-0.33098398363176695,endpoint industry composition differs; not a pure same-industry comparison
+all_observed_endpoint,"CS100001,CS100002,CS100007,CS100008,CS100009",sales_per_transaction,22701.482963875205,17891.643452412547,-4809.839511462658,-0.2118733617145867,endpoint industry composition differs; not a pure same-industry comparison
+all_observed_endpoint,"CS100001,CS100002,CS100007,CS100008,CS100009",open_count,5.0,1.0,-4.0,-0.8,endpoint industry composition differs; not a pure same-industry comparison
+all_observed_endpoint,"CS100001,CS100002,CS100007,CS100008,CS100009",close_count,6.0,5.0,-1.0,-0.16666666666666663,endpoint industry composition differs; not a pure same-industry comparison
+all_observed_endpoint,"CS100001,CS100002,CS100007,CS100008,CS100009",net_entry_count,-1.0,-4.0,-3.0,3.0,endpoint industry composition differs; not a pure same-industry comparison
+common_observed_2021_2025,"CS100001,CS100007,CS100008",sales_amount,1235506014.0,337060671.0,-898445343.0,-0.7271881583896523,only industries with complete annual observations at both endpoints
+common_observed_2021_2025,"CS100001,CS100007,CS100008",sales_transactions,57224.0,18839.0,-38385.0,-0.6707849853208444,only industries with complete annual observations at both endpoints
+common_observed_2021_2025,"CS100001,CS100007,CS100008",store_count,44.25,21.0,-23.25,-0.5254237288135593,only industries with complete annual observations at both endpoints
+common_observed_2021_2025,"CS100001,CS100007,CS100008",year_end_store_count,44.0,21.0,-23.0,-0.5227272727272727,only industries with complete annual observations at both endpoints
+common_observed_2021_2025,"CS100001,CS100007,CS100008",sales_per_store,27921039.86440678,16050508.142857144,-11870531.721549636,-0.4251464766067674,only industries with complete annual observations at both endpoints
+common_observed_2021_2025,"CS100001,CS100007,CS100008",transactions_per_store,1293.1977401129943,897.0952380952381,-396.10250201775625,-0.30629693335463637,only industries with complete annual observations at both endpoints
+common_observed_2021_2025,"CS100001,CS100007,CS100008",sales_per_transaction,21590.696456032434,17891.643452412547,-3699.053003619887,-0.1713262474488808,only industries with complete annual observations at both endpoints
+common_observed_2021_2025,"CS100001,CS100007,CS100008",open_count,3.0,1.0,-2.0,-0.6666666666666667,only industries with complete annual observations at both endpoints
+common_observed_2021_2025,"CS100001,CS100007,CS100008",close_count,5.0,5.0,0.0,0.0,only industries with complete annual observations at both endpoints
+common_observed_2021_2025,"CS100001,CS100007,CS100008",net_entry_count,-2.0,-4.0,-2.0,1.0,only industries with complete annual observations at both endpoints
+korean_food_only,CS100001,sales_amount,1058166406.0,252811337.0,-805355069.0,-0.7610854629607283,한식 only
+korean_food_only,CS100001,sales_transactions,44782.0,11330.0,-33452.0,-0.7469965611183065,한식 only
+korean_food_only,CS100001,store_count,35.0,15.0,-20.0,-0.5714285714285714,한식 only
+korean_food_only,CS100001,year_end_store_count,35.0,15.0,-20.0,-0.5714285714285714,한식 only
+korean_food_only,CS100001,sales_per_store,30233325.885714285,16854089.133333333,-13379236.752380952,-0.4425327469083661,한식 only
+korean_food_only,CS100001,transactions_per_store,1279.4857142857143,755.3333333333334,-524.1523809523809,-0.4096586426093817,한식 only
+korean_food_only,CS100001,sales_per_transaction,23629.27975525881,22313.445454545454,-1315.8343007133553,-0.05568660214539589,한식 only
+korean_food_only,CS100001,open_count,3.0,1.0,-2.0,-0.6666666666666667,한식 only
+korean_food_only,CS100001,close_count,1.0,5.0,4.0,4.0,한식 only
+korean_food_only,CS100001,net_entry_count,2.0,-4.0,-6.0,-3.0,한식 only
+snack_food_only,CS100008,sales_amount,139524095.0,47472435.0,-92051660.0,-0.6597545750072774,분식 only
+snack_food_only,CS100008,sales_transactions,11279.0,6546.0,-4733.0,-0.4196293997694831,분식 only
+snack_food_only,CS100008,store_count,6.0,3.0,-3.0,-0.5,분식 only
+snack_food_only,CS100008,year_end_store_count,6.0,3.0,-3.0,-0.5,분식 only
+snack_food_only,CS100008,sales_per_store,23254015.833333332,15824145.0,-7429870.833333332,-0.3195091500145548,분식 only
+snack_food_only,CS100008,transactions_per_store,1879.8333333333333,2182.0,302.16666666666674,0.1607412004610338,분식 only
+snack_food_only,CS100008,sales_per_transaction,12370.254011880486,7252.128780934922,-5118.125230945564,-0.4137445541562912,분식 only
+snack_food_only,CS100008,open_count,0.0,0.0,0.0,,분식 only
+snack_food_only,CS100008,close_count,2.0,0.0,-2.0,-1.0,분식 only
+snack_food_only,CS100008,net_entry_count,-2.0,0.0,2.0,-1.0,분식 only
+chicken_only,CS100007,sales_amount,37815513.0,36776899.0,-1038614.0,-0.027465289179073205,치킨 only
+chicken_only,CS100007,sales_transactions,1163.0,963.0,-200.0,-0.17196904557179704,치킨 only
+chicken_only,CS100007,store_count,3.25,3.0,-0.25,-0.07692307692307687,치킨 only
+chicken_only,CS100007,year_end_store_count,3.0,3.0,0.0,0.0,치킨 only
+chicken_only,CS100007,sales_per_store,11635542.461538462,12258966.333333334,623423.871794872,0.05357927005600405,치킨 only
+chicken_only,CS100007,transactions_per_store,357.84615384615387,321.0,-36.84615384615387,-0.10296646603611359,치킨 only
+chicken_only,CS100007,sales_per_transaction,32515.488392089424,38189.926272066456,5674.437879977031,0.17451492075258335,치킨 only
+chicken_only,CS100007,open_count,0.0,0.0,0.0,,치킨 only
+chicken_only,CS100007,close_count,2.0,0.0,-2.0,-1.0,치킨 only
+chicken_only,CS100007,net_entry_count,-2.0,0.0,2.0,-1.0,치킨 only
