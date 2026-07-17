@@ -181,6 +181,14 @@ def _quarterly_metrics(detail: pd.DataFrame, panel: pd.DataFrame) -> pd.DataFram
     frame = pd.DataFrame({"quarter": ALL_QUARTERS}).merge(sales_agg, on="quarter", how="left").merge(store_agg, on="quarter", how="left")
     frame["year"] = frame["quarter"].str[:4].astype(int)
     frame["quarter_no"] = frame["quarter"].str[-1].astype(int)
+    expected_industries = int(sales_agg["observed_industries"].max())
+    frame["expected_industries"] = expected_industries
+    frame["total_series_comparable"] = frame["observed_industries"].eq(expected_industries)
+    frame["comparability_note"] = np.where(
+        frame["total_series_comparable"],
+        "all target industries observed",
+        "incomplete industry coverage; do not compare total series",
+    )
     frame["sales_per_store"] = _ratio(frame["sales_amount"], frame["operating_stores"])
     frame["transactions_per_store"] = _ratio(frame["sales_transactions"], frame["operating_stores"])
     frame["sales_per_transaction"] = _ratio(frame["sales_amount"], frame["sales_transactions"])
@@ -191,8 +199,9 @@ def _quarterly_metrics(detail: pd.DataFrame, panel: pd.DataFrame) -> pd.DataFram
     frame["evening_sales_share"] = _ratio(frame.get("sales_17_21", 0) + frame.get("sales_21_24", 0), frame["sales_amount"])
     frame["night_sales_share"] = _ratio(frame.get("sales_21_24", 0), frame["sales_amount"])
     frame["female_sales_share"] = _ratio(frame.get("female_sales", 0), frame["sales_amount"])
+    comparable_pair = frame["total_series_comparable"] & frame["total_series_comparable"].shift(4, fill_value=False)
     for metric in ["sales_amount", "sales_transactions", "operating_stores", "sales_per_store", "transactions_per_store", "sales_per_transaction", "weekend_sales_share", "evening_sales_share"]:
-        frame[f"{metric}_yoy"] = frame[metric].pct_change(4, fill_method=None)
+        frame[f"{metric}_yoy"] = frame[metric].pct_change(4, fill_method=None).where(comparable_pair)
     frame["sales_amount_4q_ma"] = frame["sales_amount"].rolling(4, min_periods=4).mean()
     return frame
 
@@ -201,7 +210,9 @@ def _change_points(quarterly: pd.DataFrame) -> pd.DataFrame:
     """Descriptive mean-break scan plus a pre/post 2022Q4 comparison."""
     rows: list[dict[str, object]] = []
     metrics = ["sales_amount", "sales_transactions", "sales_per_store", "transactions_per_store", "weekend_sales_share", "evening_sales_share"]
-    source = quarterly.loc[quarterly["quarter"].isin(MAIN_QUARTERS)].reset_index(drop=True)
+    source = quarterly.loc[
+        quarterly["quarter"].isin(MAIN_QUARTERS) & quarterly["total_series_comparable"]
+    ].reset_index(drop=True)
     for metric in metrics:
         values = source[metric].astype(float)
         valid = values.notna()
@@ -417,20 +428,20 @@ def _plot_quarterly(quarterly: pd.DataFrame) -> None:
     labels = frame["quarter"].str[:4] + "Q" + frame["quarter"].str[-1]
     fig, axes = plt.subplots(2, 2, figsize=(12, 7), sharex=True)
     for axis, (column, title) in zip(axes.flat, [("sales_amount", "총매출"), ("sales_transactions", "거래건수"), ("operating_stores", "운영점포 수"), ("sales_per_store", "점포당 매출")]):
-        axis.plot(x, frame[column], marker="o", linewidth=1.5)
+        axis.plot(x, frame[column].where(frame["total_series_comparable"]), marker="o", linewidth=1.5)
         axis.axvline(frame.index[frame["quarter"].eq("20224")][0], color="#d73027", linestyle="--", linewidth=1, label="2022Q4")
         axis.set_title(title)
         axis.grid(alpha=.25)
         axis.ticklabel_format(style="plain", axis="y")
     axes[-1, 0].set_xticks(x[::2], labels[::2], rotation=45, ha="right")
     axes[-1, 1].set_xticks(x[::2], labels[::2], rotation=45, ha="right")
-    fig.suptitle("리움미술관 상권 분기 추이 (점선: 2022Q4)", y=1.02)
+    fig.suptitle("리움미술관 상권 분기 추이 (점선: 2022Q4, 2021Q1–Q3 불완전 집계 제외)", y=1.02)
     _savefig(LEEUM_FIGURE_DIR / "quarterly_trend.png")
 
 
 def _plot_yoy(quarterly: pd.DataFrame) -> None:
     _configure_plot()
-    frame = quarterly.loc[quarterly["quarter"].isin(MAIN_QUARTERS)].copy()
+    frame = quarterly.loc[quarterly["quarter"].isin(MAIN_QUARTERS) & quarterly["total_series_comparable"]].copy()
     fig, ax = plt.subplots(figsize=(10, 4.5))
     for column, label in [("sales_amount_yoy", "매출 YoY"), ("sales_transactions_yoy", "거래 YoY"), ("transactions_per_store_yoy", "점포당 거래 YoY")]:
         ax.plot(frame["quarter"], frame[column] * 100, marker="o", label=label)
@@ -505,7 +516,7 @@ def _plot_day_time(annual: pd.DataFrame) -> None:
 def _plot_exhibition_timeline(quarterly: pd.DataFrame, events: pd.DataFrame) -> None:
     """Show official program timing only; this is not an attendance-effect chart."""
     _configure_plot()
-    frame = quarterly.loc[quarterly["quarter"].isin(MAIN_QUARTERS)].copy()
+    frame = quarterly.loc[quarterly["quarter"].isin(MAIN_QUARTERS) & quarterly["total_series_comparable"]].copy()
     x = np.arange(len(frame))
     fig, ax = plt.subplots(figsize=(11, 4.5))
     ax.plot(x, frame["sales_amount"] / 100_000_000, marker="o", color="#4575b4")
@@ -602,7 +613,7 @@ def _write_reports(
 
 `{TARGET_NAME}`(코드 `{TARGET_CODE}`)은 기존 결과에서 **{int(target['overall_rank'])}위 / {int(target['eligible_area_count'])}개**, CoreDeclineScore **{target['CoreDeclineScore']:.3f}**입니다. 장기·중기·최근 점수는 각각 {_format_number(target['long_score'], 3)}, {_format_number(target['medium_score'], 3)}, {_format_number(target['recent_score'], 3)}입니다.
 
-2021년 한식은 완결연도 조건을 충족하지 않습니다. 따라서 2021년 전체 외식업 합계를 2025년과 직접 비교하지 않았고, 순위 재현에는 업종별 완결 자료의 상대성과를 사용했습니다. 2022–2025는 완결연도 총량 추세로 별도 분석했습니다.
+2021년 한식은 완결연도 조건을 충족하지 않습니다. 따라서 2021년 전체 외식업 합계를 2025년과 직접 비교하지 않았고, 순위 재현에는 업종별 완결 자료의 상대성과를 사용했습니다. 2022–2025는 완결연도 총량 추세로 별도 분석했습니다. 분기 총량에서도 2021Q1–Q3은 4개 중 3개 업종만 관측되어 비교·전년동기·변화점 계산에서 제외합니다.
 """)
     write_text(LEEUM_REPORT_DIR / "01_quarterly_turning_points.md", f"""# 01. 분기 전환점과 2022년 고점
 
@@ -610,7 +621,7 @@ def _write_reports(
 
 2022년 총매출은 {_format_number(annual.at[2022, 'sales_amount'] / 100_000_000, 2)}억 원, 2025년은 {_format_number(annual.at[2025, 'sales_amount'] / 100_000_000, 2)}억 원입니다. 2022→2025 변화는 {_format_number(_pct(annual.at[2022, 'sales_amount'], annual.at[2025, 'sales_amount']) * 100, 1)}%입니다. 거래건수도 {_format_number(_pct(annual.at[2022, 'sales_transactions'], annual.at[2025, 'sales_transactions']) * 100, 1)}% 변했습니다.
 
-평균수준 분할 탐색에서 총매출의 가장 낮은 오차 분할 후보는 **{_quarter_label(post['best_mean_break_quarter'])}**이며, 2022Q4 전후 평균 변화는 {_format_number(post['post_vs_pre_change'] * 100, 1)}%입니다.
+비교 가능한 분기만 사용한 평균수준 분할 탐색에서 총매출의 가장 낮은 오차 분할 후보는 **{_quarter_label(post['best_mean_break_quarter'])}**이며, 2022Q4 전후 평균 변화는 {_format_number(post['post_vs_pre_change'] * 100, 1)}%입니다. 이 전후 평균에는 불완전한 2021Q1–Q3을 넣지 않았습니다.
 
 ## 해석
 
@@ -628,7 +639,7 @@ def _write_reports(
 
 ## 해석
 
-점포 수가 거의 유지된 상태에서도 점포당 거래와 건당 매출이 함께 약해졌는지를 보여주는 회계적 분해입니다. 방문객 감소, 가격 변화, 상권 이동 중 어느 것이 원인인지는 이 항등식만으로 구분할 수 없습니다.
+점포 수가 거의 유지된 상태에서 **점포당 거래는 약화**했고, **건당 매출은 상승하여 일부를 완충**했음을 보여주는 회계적 분해입니다. 방문객 감소, 가격 변화, 상권 이동 중 어느 것이 원인인지는 이 항등식만으로 구분할 수 없습니다.
 """)
     write_text(LEEUM_REPORT_DIR / "03_industry_analysis.md", f"""# 03. 업종별 재편 검증
 
@@ -640,7 +651,7 @@ def _write_reports(
 
 ## 해석
 
-점포 총수만으로 업종 교체를 확정할 수는 없습니다. 주소·사업체 단위의 연속 관측이 없기 때문입니다. 다만 업종별 매출·거래·점포 수의 상반된 변화는 업종 구성 변화 가능성을 평가하는 근거입니다.
+모든 관측 업종의 2022→2025 매출은 감소했습니다. 점포 총수만으로 업종 교체를 확정할 수는 없고, 주소·사업체 단위의 연속 관측도 없습니다. 따라서 이 표는 업종별 **절대 감소액**만 보여주며, 업종 재편의 증거로 해석하지 않습니다.
 """)
     write_text(LEEUM_REPORT_DIR / "04_day_time_customer_analysis.md", f"""# 04. 주말·시간대·고객구성 분석
 
@@ -660,7 +671,7 @@ def _write_reports(
 
 ## 해석
 
-대상이 하락하고 주변권역 합계가 유지·증가하면 공간 재배치와 **일치하는 패턴**일 수 있습니다. 그러나 이동경로·점포 이전 주소 자료가 없으므로 재배치의 인과 증거는 아닙니다.
+대상이 하락하고 주변권역의 **선정 상권 합계**가 유지·증가하면 공간 재배치와 **일치하는 패턴**일 수 있습니다. 이는 상권별 평균이나 동일 업종 보정치가 아닌 합계 지수이며, 이동경로·점포 이전 주소 자료가 없으므로 재배치의 인과 증거는 아닙니다.
 """)
     write_text(LEEUM_REPORT_DIR / "06_matched_control_analysis.md", f"""# 06. 2022년 유사 상권 비교
 
@@ -769,7 +780,7 @@ def _evidence(
         {"hypothesis": "H2_itaewon_external_shock", "predicted_pattern": "A sustained post-2022Q4 fall, especially visitor-oriented weekend/evening demand and neighbouring areas", "observed_facts": f"post/pre sales mean change {cp['post_vs_pre_change']:.1%}; event date is verified", "supporting_evidence": "The official event date falls in 2022Q4", "counter_evidence": "No visitor origin, exposure intensity, or causal control is available; break timing can reflect concurrent changes", "verdict": "not_verifiable", "confidence": "low", "interpretation_boundary": "Temporal coincidence is not causal attribution."},
         {"hypothesis": "H3_spatial_reallocation", "predicted_pattern": "Leeum falls while nearby candidate areas or same industries rise", "observed_facts": f"2025 index: Leeum {neighbor.get('leeum', np.nan):.1f}, neighbours {neighbor.get('selected_neighbors', np.nan):.1f}", "supporting_evidence": "Relative divergence is observable if candidate aggregate is higher", "counter_evidence": "No movement paths, store-address transitions, or origin-destination data", "verdict": "possible" if neighbor.get("selected_neighbors", 0) > neighbor.get("leeum", 0) else "not_supported", "confidence": "low", "interpretation_boundary": "Spatial co-movement is descriptive only."},
         {"hypothesis": "H4_redevelopment_indirect_effect", "predicted_pattern": "Dated redevelopment exposure overlaps residential/daytime demand weakening", "observed_facts": "No redevelopment boundary or dated relocation/demolition input available", "supporting_evidence": "None in the provided data", "counter_evidence": "No spatial or timing evidence", "verdict": "not_verifiable", "confidence": "low", "interpretation_boundary": "Redevelopment cannot be inserted as an assumed cause."},
-        {"hypothesis": "H5_industry_recomposition", "predicted_pattern": "Total stores are stable but industry shares/turnover change", "observed_facts": f"2022→2025 stores {store_2022_2025:.1%}; declining industries: {', '.join(industry_loss)}", "supporting_evidence": "Industry-level sales changes are heterogeneous while total stores are stable", "counter_evidence": "No business/address identifier to observe actual replacement", "verdict": "partially_supported", "confidence": "medium", "interpretation_boundary": "Industry-level change is not store-level turnover proof."},
+        {"hypothesis": "H5_industry_recomposition", "predicted_pattern": "Total stores are stable but industry shares/turnover change", "observed_facts": f"2022→2025 stores {store_2022_2025:.1%}; every observed industry has lower sales: {', '.join(industry_loss)}", "supporting_evidence": "Total average store count is broadly stable", "counter_evidence": "All observed industries decline and there is no business/address identifier to observe replacement", "verdict": "not_supported", "confidence": "medium", "interpretation_boundary": "Stable total stores do not establish industry reorganization; the available pattern is broad sales decline."},
         {"hypothesis": "H6_underlying_demand_weakening", "predicted_pattern": "Transactions and transactions per store fall even if store count remains stable", "observed_facts": f"transactions {tx_2022_2025:.1%}; stores {store_2022_2025:.1%}; tx/store log effect {decomp['log_transactions_per_store_effect']:.3f}", "supporting_evidence": "Transaction deterioration is not explained by store count alone", "counter_evidence": "Demand source (resident, worker, tourist) is not observed", "verdict": "partially_supported", "confidence": "medium", "interpretation_boundary": "Transaction-based weakening is observed; its demand source is not identified."},
         {"hypothesis": "H7_matched_area_relative_weakening", "predicted_pattern": "Leeum declines more than similarly configured 2022 areas", "observed_facts": f"2025 index: Leeum {controls.get('leeum', np.nan):.1f}, matched controls {controls.get('matched_controls', np.nan):.1f}; max |SMD| {maximum_balance_gap:.2f}", "supporting_evidence": "The selected comparison areas decline less in the observed series", "counter_evidence": "The selected controls remain materially unbalanced (max |SMD| exceeds 0.25) and omit tourist exposure, rent, and museum visits", "verdict": "possible" if controls.get("leeum", 0) < controls.get("matched_controls", 0) else "not_supported", "confidence": "low", "interpretation_boundary": "This is a descriptive comparison, not a credible causal control."},
     ]

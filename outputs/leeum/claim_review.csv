@@ -1,0 +1,9 @@
+﻿claim_or_chart,status,preferred_wording
+rank 5 / CoreDeclineScore 2.231,valid with scope,"Eligible-sample relative-underperformance rank, not an absolute-decline rank."
+2021 total vs 2025 total,invalid,Do not compare: 2021Q1–Q3 omit one target industry.
+2021→2025 industry percentages,valid only per complete industry,Label the start/end years explicitly; never compare directly with a 2022=100 chart.
+"2022→2025 total sales, transactions, stores",valid descriptive total,Complete-year absolute trend after the observed 2022 peak; no causal claim.
+sales decomposition,valid accounting identity,Transaction intensity is the negative component; transaction value rises and partly offsets it.
+industry reorganization,not supported,All four observed industries decline; store/business continuity data are absent.
+neighbor/control indices,descriptive only,Indices are 2022=100 aggregates; control balance is poor (max |SMD| 2.69).
+2022Q4 event break,not identified,2022Q4 is an event marker; the descriptive mean-break candidate is 2024Q3 and is not causal.

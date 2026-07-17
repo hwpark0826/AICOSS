@@ -1,7 +1,7 @@
 ﻿metric,best_mean_break_quarter,best_mean_break_sse,pre_2022q4_mean,post_2022q4_mean,post_vs_pre_change,interpretation
-sales_amount,20243,2.642209155456769e+18,1681139275.5714285,1603880491.0769231,-0.04595620697056446,Descriptive break scan; seasonality and concurrent causes are not controlled.
-sales_transactions,20243,4265952453.2142863,56318.57142857143,50042.846153846156,-0.11143260767338081,Descriptive break scan; seasonality and concurrent causes are not controlled.
-sales_per_store,20243,5556310752195338.0,76142353.52139765,73117945.94006719,-0.039720437331642766,Descriptive break scan; seasonality and concurrent causes are not controlled.
-transactions_per_store,20243,8568610.992163628,2545.736932591218,2281.190157668418,-0.10391756176217593,Descriptive break scan; seasonality and concurrent causes are not controlled.
-weekend_sales_share,20233,0.007442217161958146,0.3776584934050735,0.3819232973713865,0.011292752687382723,Descriptive break scan; seasonality and concurrent causes are not controlled.
-evening_sales_share,20231,0.008261510409683537,0.46719993738430354,0.4505487334094905,-0.03564042424328562,Descriptive break scan; seasonality and concurrent causes are not controlled.
+sales_amount,20243,8.822590114430331e+17,2099096628.0,1603880491.0769231,-0.23591869488872186,Descriptive break scan; seasonality and concurrent causes are not controlled.
+sales_transactions,20243,1614398224.1818182,74473.75,50042.846153846156,-0.32804718234483754,Descriptive break scan; seasonality and concurrent causes are not controlled.
+sales_per_store,20243,1765314165634174.2,94935613.92380951,73117945.94006719,-0.2298154199671798,Descriptive break scan; seasonality and concurrent causes are not controlled.
+transactions_per_store,20243,2929012.981921441,3360.323722943723,2281.190157668418,-0.3211397633826656,Descriptive break scan; seasonality and concurrent causes are not controlled.
+weekend_sales_share,20233,0.006622205716860912,0.3767529411633134,0.3819232973713865,0.013723466078614743,Descriptive break scan; seasonality and concurrent causes are not controlled.
+evening_sales_share,20231,0.005422890617702321,0.45797275188492576,0.4505487334094905,-0.01621061175556726,Descriptive break scan; seasonality and concurrent causes are not controlled.

@@ -1,0 +1,15 @@
+﻿check,expected,observed,difference,status
+annual sales identity 2022,8317066110.0,8317066110.0,0.0,pass
+annual transactions identity 2022,282150.0,282150.0,0.0,pass
+annual sales/store identity 2022,391391346.35294116,391391346.3529412,5.960464477539063e-08,pass
+annual sales identity 2023,7643848529.0,7643848529.0,0.0,pass
+annual transactions identity 2023,247271.0,247271.0,0.0,pass
+annual sales/store identity 2023,351441311.6781609,351441311.6781609,0.0,pass
+annual sales identity 2024,6552204107.0,6552204107.0,0.0,pass
+annual transactions identity 2024,204463.0,204463.0,0.0,pass
+annual sales/store identity 2024,294481083.46067417,294481083.46067417,0.0,pass
+annual sales identity 2025,4835389560.0,4835389560.0,0.0,pass
+annual transactions identity 2025,143705.0,143705.0,0.0,pass
+annual sales/store identity 2025,217320879.1011236,217320879.1011236,0.0,pass
+sales decomposition identity 2022→2025,0.0,0.0,0.0,pass
+incomplete total-series quarters excluded,"20211, 20212, 20213","20211, 20212, 20213",,pass
