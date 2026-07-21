@@ -1,0 +1,5 @@
+﻿model,outcome,predictor,coefficient,cluster_se_area,ci95_low,ci95_high,observations,areas,fixed_effects
+same_quarter,nonfood_sales_yoy_log_change,food_sales_yoy_log_change,0.04914029150145116,0.018421677008722014,0.013033804564356016,0.0852467784385463,22112,1447,area + quarter
+lag1,nonfood_sales_yoy_log_change,food_sales_yoy_log_change_lag1,0.0406134413976844,0.017576490354519626,0.006163520302825937,0.07506336249254286,20741,1447,area + quarter
+lag1_with_population,nonfood_sales_yoy_log_change,food_sales_yoy_log_change_lag1,0.04044707787616578,0.017610409579382445,0.005930675100576183,0.07496348065175537,20726,1447,area + quarter
+lag1_with_population,nonfood_sales_yoy_log_change,floating_population_yoy_log_change,0.02799369183412591,0.02931648429758789,-0.029466617389146355,0.08545400105739817,20726,1447,area + quarter

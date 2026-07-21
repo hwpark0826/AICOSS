@@ -69,8 +69,16 @@ def _resolve_column(columns: Iterable[str], candidates: Iterable[str]) -> str:
     raise KeyError(f"필수 컬럼을 찾지 못했습니다. 후보: {list(candidates)}; 실제: {list(columns)}")
 
 
-def _read_filtered(path: Path, role: str, encoding: str, chunksize: int = 100_000) -> pd.DataFrame:
-    """Load only selected food-service rows and normalize source schema."""
+def _read_filtered(
+    path: Path, role: str, encoding: str, chunksize: int = 100_000,
+    industry_codes: set[str] | None = FOOD_CODES,
+) -> pd.DataFrame:
+    """Load selected industry rows and normalize the common source schema.
+
+    ``industry_codes=None`` retains every observed industry and is used only by
+    the separate all-industry scenario; the default preserves the food-only
+    ranking pipeline.
+    """
     header = pd.read_csv(path, encoding=encoding, nrows=0).columns.tolist()
     quarter_col = _resolve_column(header, ["기준_년분기_코드"])
     area_code_col = _resolve_column(header, ["상권_코드"])
@@ -93,7 +101,8 @@ def _read_filtered(path: Path, role: str, encoding: str, chunksize: int = 100_00
     parts: list[pd.DataFrame] = []
     for chunk in pd.read_csv(path, encoding=encoding, usecols=selected, chunksize=chunksize, low_memory=False):
         chunk[industry_code_col] = chunk[industry_code_col].astype(str).str.strip()
-        chunk = chunk.loc[chunk[industry_code_col].isin(FOOD_CODES)].copy()
+        if industry_codes is not None:
+            chunk = chunk.loc[chunk[industry_code_col].isin(industry_codes)].copy()
         if chunk.empty:
             continue
         chunk = chunk.rename(columns={
@@ -113,12 +122,17 @@ def _read_filtered(path: Path, role: str, encoding: str, chunksize: int = 100_00
     return data
 
 
-def load_area_data(inputs: list[InputFile], role: str) -> pd.DataFrame:
-    """Load all source files with a given role and append a source identifier."""
+def load_area_data(
+    inputs: list[InputFile], role: str, industry_codes: set[str] | None = FOOD_CODES,
+) -> pd.DataFrame:
+    """Load source files for selected industries, or all observed industries."""
     files = [item for item in inputs if item.role == role]
     if not files:
         raise FileNotFoundError(f"{role} 역할의 데이터 파일이 없습니다.")
-    return pd.concat([_read_filtered(item.path, role, item.encoding) for item in files], ignore_index=True)
+    return pd.concat([
+        _read_filtered(item.path, role, item.encoding, industry_codes=industry_codes)
+        for item in files
+    ], ignore_index=True)
 
 
 def read_area_reference(root: Path = RAW_DIR) -> pd.DataFrame:

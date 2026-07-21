@@ -1,0 +1,9 @@
+﻿model,outcome,predictor,coefficient,cluster_se_area,ci95_low,ci95_high,observations,areas,fixed_effects,target_code,target_industry
+CS300011_same_quarter,target_sales_yoy_log_change,food_sales_yoy_log_change,0.042706970686978436,0.05536837855914828,-0.06581505128895218,0.15122899266290907,13039,927,area + quarter,CS300011,일반의류
+CS300011_lag1,target_sales_yoy_log_change,food_sales_yoy_log_change_lag1,0.020626983286854278,0.055357123663275824,-0.08787297909316634,0.12912694566687488,12226,919,area + quarter,CS300011,일반의류
+CS300011_lag1_with_population,target_sales_yoy_log_change,food_sales_yoy_log_change_lag1,0.01514000502812239,0.05525581942019118,-0.09316140103545231,0.1234414110916971,12214,919,area + quarter,CS300011,일반의류
+CS300011_lag1_with_population,target_sales_yoy_log_change,floating_population_yoy_log_change,0.049669170285788995,0.05559562057168124,-0.059298246034706244,0.15863658660628424,12214,919,area + quarter,CS300011,일반의류
+CS300022_same_quarter,target_sales_yoy_log_change,food_sales_yoy_log_change,0.03799292371412139,0.07236829046167637,-0.10384892559076428,0.17983477301900705,7728,588,area + quarter,CS300022,화장품
+CS300022_lag1,target_sales_yoy_log_change,food_sales_yoy_log_change_lag1,-0.029428792194527768,0.07178578328304815,-0.17012892742930213,0.1112713430402466,7222,583,area + quarter,CS300022,화장품
+CS300022_lag1_with_population,target_sales_yoy_log_change,food_sales_yoy_log_change_lag1,-0.02868244844619209,0.07224159604259373,-0.17027597668967578,0.11291107979729162,7222,583,area + quarter,CS300022,화장품
+CS300022_lag1_with_population,target_sales_yoy_log_change,floating_population_yoy_log_change,-0.04430772890281266,0.11482350335285771,-0.26936179547441375,0.18074633766878845,7222,583,area + quarter,CS300022,화장품

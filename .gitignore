@@ -13,3 +13,6 @@ __pycache__/
 .pytest_cache/
 .DS_Store
 Thumbs.db
+
+# Presentation-tool inspection sidecars are generated locally and are not deliverables.
+*.pptx.inspect.ndjson

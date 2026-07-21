@@ -1,0 +1,67 @@
+{
+  "observed_industries": 63,
+  "joined_areas": 1596,
+  "eligible_areas": 1084,
+  "leeum": [
+    {
+      "area_code": "3110091",
+      "food_overall_rank": 5.0,
+      "food_CoreDeclineScore": 2.2306251614359773,
+      "area_name": "리움미술관",
+      "all_industry_rank": 37,
+      "all_industry_CoreDeclineScore": 1.7506276578172744
+    }
+  ],
+  "top10": [
+    {
+      "overall_rank": 1,
+      "area_name": "삼양사거리역 1번",
+      "CoreDeclineScore": 3.567445860042013
+    },
+    {
+      "overall_rank": 2,
+      "area_name": "성미산체육관",
+      "CoreDeclineScore": 3.4377892812767965
+    },
+    {
+      "overall_rank": 3,
+      "area_name": "신자초등학교",
+      "CoreDeclineScore": 3.404347481074009
+    },
+    {
+      "overall_rank": 4,
+      "area_name": "고척초등학교",
+      "CoreDeclineScore": 3.167582673764944
+    },
+    {
+      "overall_rank": 5,
+      "area_name": "홍파초등학교",
+      "CoreDeclineScore": 3.0835858598900536
+    },
+    {
+      "overall_rank": 6,
+      "area_name": "대원고등학교",
+      "CoreDeclineScore": 3.0487370490490524
+    },
+    {
+      "overall_rank": 7,
+      "area_name": "청계천공구상가",
+      "CoreDeclineScore": 2.8748583801553242
+    },
+    {
+      "overall_rank": 8,
+      "area_name": "월드순복음교회",
+      "CoreDeclineScore": 2.804383755982185
+    },
+    {
+      "overall_rank": 9,
+      "area_name": "둔촌2동주민센터",
+      "CoreDeclineScore": 2.760021094111132
+    },
+    {
+      "overall_rank": 10,
+      "area_name": "열정도",
+      "CoreDeclineScore": 2.7441497503922014
+    }
+  ]
+}

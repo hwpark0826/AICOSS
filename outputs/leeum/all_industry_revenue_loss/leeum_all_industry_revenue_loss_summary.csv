@@ -1,0 +1,3 @@
+﻿basis,reference_year,current_year,reference_sales,current_sales,sales_decrease_amount,sales_change_percent,reference_transactions,current_transactions,transaction_change_percent,industries_in_current_year
+원자료 관측 합계,2022,2025,8698177495,6367449270,2330728225,-26.795592827805358,284083,150840,-46.90284177511502,6
+동일 업종·완전분기 비교,2022,2025,8400973444,5585178943,2815794501,-33.517478894199435,282645,150350,-46.80606414406765,5
